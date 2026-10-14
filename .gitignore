@@ -1,0 +1,26 @@
+# 构建目录
+build/
+
+# 编译产物
+*.o
+*.obj
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
+
+# 示例的可执行文件（CMake 会放进 build/，这里兜底手编的情况）
+01-matmul-cpu
+
+# Nsight 输出
+*.nsys-rep
+*.ncu-rep
+*.sqlite
+*.qdstrm
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
