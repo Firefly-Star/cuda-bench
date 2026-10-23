@@ -1,4 +1,23 @@
-# bench
+# cuda-bench
+
+**A CUDA / CPU benchmark harness that reports how much you can trust the number.**
+
+> Measurements lie. The same binary, run four times, gave `cpu_matmul3`
+> 19.6 / 15.6 / 12.1 / 7.19 ms — a 2.73× spread. If you can't even say which build is
+> faster, every "optimization" after that is self-deception. This harness exists to
+> press that 2.73× down.
+
+It reports `min / median / p95` instead of just the mean, derives a jitter metric
+`(p95-min)/min` that tells you **whether the run is trustworthy at all** (>20% → don't
+draw conclusions), pins to physical cores to avoid SMT siblings, moves allocation and
+cache-flushing outside the timing window, and documents the cases it *cannot* explain.
+
+The body of this README is in Chinese; [Known limitations](#已知限制) is worth reading even
+if you only skim the rest — it lists the measurements this environment fundamentally cannot make.
+
+---
+
+## 为什么做这个
 
 一个给自己用的 CUDA / CPU 基准框架。
 
@@ -144,3 +163,19 @@ my kernel: min 6.0614  median 6.82268  p95 7.46704  mean 6.85162  max 7.87261 ms
 
 ⚠️ 别把这个结论推广到别的内核：纯计算、依赖延迟受限的活儿（烧 FP 的微基准那种）
 SMT 能接近 2 倍。**"SMT 有没有用"完全取决于瓶颈在哪。**
+
+---
+
+## 相关实验
+
+这套抖动判据是在下面几个实验里磨出来的，它们共用同一套方法：
+
+- [`cuda-managed-vs-malloc`](https://github.com/Firefly-Star/cuda-managed-vs-malloc) —— 用这套
+  「排除法 + 比值而非绝对值」的方式定位到：Windows 系平台上 `cudaMallocManaged` 的数据
+  从不进显存，访存全程跨 PCIe，带宽恒为 ~9.9 GB/s，对比 `cudaMalloc` 的 ~131 GB/s（13 倍）。
+- `cuda-benchmark-warmup` —— 预热、`nsys` 计时不变性、ramp 步进的对照实验
+- `cuda-execution-model` —— 执行模型相关基准
+
+## License
+
+[MIT](LICENSE)
